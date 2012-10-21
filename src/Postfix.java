@@ -8,7 +8,7 @@ public class Postfix {
         try {
             URL url = Postfix.class.getResource("input.txt");
             if (url != null) {
-                Parser parse = new Parser(url.getPath());
+                Parser parse = new Parser(url.getPath(), "input/output.txt");
                 parse.expr();
                 parse.finish();
             }

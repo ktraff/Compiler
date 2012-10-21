@@ -1,4 +1,7 @@
 import java.io.*;
+
+import util.Writer;
+import util.WriterFactory;
 import exception.*;
 
 /**
@@ -11,11 +14,11 @@ public class Parser {
     // character tokens can be introduced
     static int lookahead;
     BufferedReader reader;
-    BufferedWriter writer;
+    Writer writer;
     
-    public Parser(String filePath) throws IOException {
+    public Parser(String filePath, String outputPath) throws IOException {
         reader = new BufferedReader(new FileReader(filePath));
-        writer = new BufferedWriter(new FileWriter("output.txt"));
+        writer = new WriterFactory(outputPath).create();
         lookahead = reader.read();
     }
     
