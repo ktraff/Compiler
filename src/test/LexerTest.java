@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.Hashtable;
 
 import lexer.Lexer;
+import lexer.Num;
 import lexer.Tag;
 import lexer.Token;
 import lexer.Word;
@@ -18,7 +19,7 @@ public class LexerTest {
     
     @Before
     public void setup() {
-        lexer = new Lexer();
+        lexer = new Lexer("input/input.txt", "console");
     }
     
     @After
@@ -44,7 +45,27 @@ public class LexerTest {
 
     @Test
     public void testScan() {
-        fail("Not yet implemented");
+        lexer = new Lexer("input/lexer-test-1", "console");
+        
+        Word trueWord = (Word)lexer.scan();
+        assertEquals(Tag.TRUE, trueWord.tag);
+        assertEquals("true", trueWord.lexeme);
+        
+        Num numTag = (Num)lexer.scan();
+        assertEquals(Tag.NUM, numTag.tag);
+        assertEquals(1, numTag.value);
+        
+        Word falseWord = (Word)lexer.scan();
+        assertEquals(Tag.FALSE, falseWord.tag);
+        assertEquals("false", falseWord.lexeme);
+        
+        numTag = (Num)lexer.scan();
+        assertEquals(Tag.NUM, numTag.tag);
+        assertEquals(3, numTag.value);
+        
+        Word anIdentifier = (Word)lexer.scan();
+        assertEquals(Tag.ID, anIdentifier.tag);
+        assertEquals("anIdentifier", anIdentifier.lexeme);
     }
 
     @Test

@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Hashtable;
 
+import util.Reader;
+import util.ReaderFactory;
 import util.Writer;
 import util.WriterFactory;
 
@@ -19,12 +21,12 @@ public class Lexer {
     private int line = 1;
     private char peek = ' ';
     private Hashtable<String, Token> words = new Hashtable<String, Token>();
-    BufferedReader reader;
+    Reader reader;
     Writer writer;
     
-    public Lexer(String filePath, String outputPath) throws FileNotFoundException {
-        reader = new BufferedReader(new FileReader(filePath));
-        writer = new WriterFactory(outputPath).create();
+    public Lexer(String input, String output) {
+        reader = new ReaderFactory(input).create();
+        writer = new WriterFactory(output).create();
         this.reserve(new Word(Tag.TRUE, "true"));
         this.reserve(new Word(Tag.FALSE, "false"));
     }
@@ -33,7 +35,7 @@ public class Lexer {
         words.put(t.lexeme, t);
     }
     
-    public Token scan() throws IOException {
+    public Token scan() {
         this.parseWhitespace();
         // parse digits
         if (Character.isDigit(this.peek)) {
@@ -54,9 +56,10 @@ public class Lexer {
      * Parses through whitespace characters until a non-whitespace character is reached
      * @throws IOException
      */
-    public void parseWhitespace() throws IOException {
-        for ( ; ; this.peek = (char)System.in.read()) {
-            if (this.peek == ' ' || this.peek == '\t') continue;
+    public void parseWhitespace() {
+        for ( ; ; this.peek = (char)reader.read()) {
+            if (this.peek == ' ' || this.peek == '\t' || 
+                this.peek == '\r' || this.peek == '\n') continue;
             else if (this.peek == '\n') this.line++;
             else break;
         }
@@ -67,11 +70,11 @@ public class Lexer {
      * @return a number token representing the string of characters
      * @throws IOException
      */
-    public Num parseNum() throws IOException{
+    public Num parseNum() {
         int value = 0;
         do {
             value = 10 * value + Character.digit(this.peek, 10);
-            this.peek = (char)System.in.read();
+            this.peek = (char)reader.read();
         } while (Character.isDigit(this.peek));
         return new Num(value);
     }
@@ -81,11 +84,11 @@ public class Lexer {
      * @return a word token representing the string of characters
      * @throws IOException
      */
-    public Word parseWord() throws IOException {
+    public Word parseWord() {
         StringBuilder lexeme = new StringBuilder();
         do {
             lexeme.append(this.peek);
-            this.peek = (char)System.in.read();
+            this.peek = (char)reader.read();
         } while (Character.isLetterOrDigit(this.peek));
         String wordStr = lexeme.toString();
         Word savedWord = (Word)this.words.get(wordStr);
