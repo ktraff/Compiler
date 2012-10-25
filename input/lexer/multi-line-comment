@@ -1,0 +1,13 @@
+/* This is
+    a
+    multiline comment */
+ 2
+ /* another comment */ 
+ anIdentifier
+
+/**
+ * A javadoc comment
+ * @author ktraff
+ */  
+
+false
