@@ -24,9 +24,19 @@ public class Lexer {
     Reader reader;
     Writer writer;
     
+    public Lexer() {
+        reader = new ReaderFactory("input/lexer/default").create();
+        writer = new WriterFactory("console").create();
+        this.initReservedTokens();
+    }
+    
     public Lexer(String input, String output) {
         reader = new ReaderFactory(input).create();
         writer = new WriterFactory(output).create();
+        this.initReservedTokens();
+    }
+    
+    public void initReservedTokens() {
         this.reserve(new Word(Tag.TRUE, "true"));
         this.reserve(new Word(Tag.FALSE, "false"));
         // relational operators
