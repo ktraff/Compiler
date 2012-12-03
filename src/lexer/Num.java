@@ -13,6 +13,6 @@ public class Num extends Token {
     }
     
     public String toString() {
-        return "Num: " + this.value + "(" + this.tag + ")";
+        return "" + this.value;
     }
 }

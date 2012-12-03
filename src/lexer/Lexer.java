@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Hashtable;
 
+import symbols.Type;
 import util.Reader;
 import util.ReaderFactory;
 import util.Writer;
@@ -37,22 +38,87 @@ public class Lexer {
     }
     
     public void initReservedTokens() {
-        this.reserve(new Word(Tag.TRUE, "true"));
-        this.reserve(new Word(Tag.FALSE, "false"));
-        // relational operators
-        this.reserve(new Word(Tag.LESS_THAN, "<"));
-        this.reserve(new Word(Tag.LTE, "<="));
-        this.reserve(new Word(Tag.EQUAL_TO, "=="));
-        this.reserve(new Word(Tag.NOT_EQUAL_TO, "!="));
-        this.reserve(new Word(Tag.GTE, ">="));
-        this.reserve(new Word(Tag.GREATER_THAN, ">"));
+        this.reserve(new Word("if", Tag.IF));
+        this.reserve(new Word("else", Tag.ELSE));
+        this.reserve(new Word("while", Tag.WHILE));
+        this.reserve(new Word("do", Tag.DO));
+        this.reserve(new Word("break", Tag.BREAK));
+        this.reserve(Word.True); this.reserve(Word.False);
+        this.reserve(Type.Int); this.reserve(Type.Char);
+        this.reserve(Type.Bool); this.reserve(Type.Float);
     }
     
     public void reserve(Word t) {
         words.put(t.lexeme, t);
     }
     
-    public Token scan() {
+    void readch() throws IOException { peek = (char)System.in.read(); }
+    
+    /**
+     * Used to read composite tokens, e.g. if '>' is read, this method can be called
+     * to check if the next character is '='
+     * @param c
+     * @return
+     * @throws IOException
+     */
+    boolean readch(char c) throws IOException {
+       readch();
+       if( peek != c ) return false;
+       peek = ' ';
+       return true;
+    }
+    
+    public Token scan() throws IOException {
+       for( ; ; readch() ) {
+          if( peek == ' ' || peek == '\t' ) continue;
+          else if( peek == '\n' ) line = line + 1;
+          else break;
+       }
+       switch( peek ) {
+       case '&':
+          if( readch('&') ) return Word.and;  else return new Token('&');
+       case '|':
+          if( readch('|') ) return Word.or;   else return new Token('|');
+       case '=':
+          if( readch('=') ) return Word.eq;   else return new Token('=');
+       case '!':
+          if( readch('=') ) return Word.ne;   else return new Token('!');
+       case '<':
+          if( readch('=') ) return Word.le;   else return new Token('<');
+       case '>':
+          if( readch('=') ) return Word.ge;   else return new Token('>');
+       }
+       if( Character.isDigit(peek) ) {
+          int v = 0;
+          do {
+             v = 10*v + Character.digit(peek, 10); readch();
+          } while( Character.isDigit(peek) );
+          if( peek != '.' ) return new Num(v);
+          float x = v; float d = 10;
+          for(;;) {
+             readch();
+             if( ! Character.isDigit(peek) ) break;
+             x = x + Character.digit(peek, 10) / d; d = d*10;
+          }
+          return new Real(x);
+       }
+       if( Character.isLetter(peek) ) {
+          StringBuffer b = new StringBuffer();
+          do {
+             b.append(peek); readch();
+          } while( Character.isLetterOrDigit(peek) );
+          String s = b.toString();
+          Word w = (Word)words.get(s);
+          if( w != null ) return w;
+          w = new Word(s, Tag.ID);
+          words.put(s, w);
+          return w;
+       } 
+       Token tok = new Token(peek); peek = ' ';
+       return tok;
+    }
+    
+    /*public Token scan() {
         while (!this.isToken(this.peek)) {
             this.parseWhitespace();
             this.parseComments();
@@ -73,7 +139,7 @@ public class Lexer {
         Token t = new Token(this.peek);
         this.peek = ' ';
         return t;
-    }
+    }*/
     
     /**
      * Parses through whitespace characters until a non-whitespace character is reached
@@ -159,7 +225,7 @@ public class Lexer {
         Word savedWord = (Word)this.words.get(wordStr);
         if (savedWord != null) return savedWord;
         // the word has not been saved, create a new one
-        Word newWord = new Word(Tag.ID, wordStr);
+        Word newWord = new Word(wordStr, Tag.ID);
         this.words.put(wordStr, newWord);
         return newWord;
     }
@@ -178,7 +244,7 @@ public class Lexer {
         Word savedWord = (Word)this.words.get(wordStr);
         if (savedWord != null) return savedWord;
         // the word has not been saved, create a new one
-        Word newWord = new Word(Tag.ID, wordStr);
+        Word newWord = new Word(wordStr, Tag.ID);
         this.words.put(wordStr, newWord);
         return newWord;
     }

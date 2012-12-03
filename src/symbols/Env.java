@@ -1,5 +1,5 @@
 package symbols;
-import java.util.*;
+import java.util.*; import lexer.*; import inter.*;
 
 /**
  * Represents a symbol table for a particular scope (or block) of execution
@@ -8,31 +8,26 @@ import java.util.*;
  * @author ktraff
  */
 public class Env {
-    private Hashtable<String, Symbol> table;
+    private Hashtable<Token, Id> table;
     // reference to the closest "parent" symbol table
     protected Env prev;
     
     public Env(Env prev) {
         this.prev = prev;
-        this.table = new Hashtable<String, Symbol>();
+        this.table = new Hashtable<Token, Id>();
     }
     
-    public void put(String str, Symbol sym) {
-        this.table.put(str, sym);
-    }
+    public void put(Token w, Id i) { table.put(w, i); }
     
     /**
      * Search each symbol tree, recursing up to the highest-level parent,
      * searching for the nearest applicable symbol
-     * @param str
      * @return
      */
-    public Symbol get(String str) {
-        Env curEnv = this;
-        Symbol symbol = curEnv.table.get(str);
-        for (curEnv = this; curEnv != null && symbol == null; curEnv = curEnv.prev) {
-            Symbol found = curEnv.table.get(str);
-            if (found != null) return found;
+    public Id get(Token w) {
+        for( Env e = this; e != null; e = e.prev ) {
+            Id found = (Id)(e.table.get(w));
+            if( found != null ) return found;
         }
         return null;
     }
